@@ -131,6 +131,16 @@ st.markdown("""
     margin-top: 0.25rem;
 }
 
+.click-helper {
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    color: #475569;
+    font-size: 0.84rem;
+    margin-top: 0.5rem;
+}
+
 .rm-card {
     background: white;
     border: 1px solid var(--border);
@@ -535,6 +545,37 @@ with i3:
         "Bahagian dengan jumlah kos paling tinggi."
     )
 
+st.markdown(
+    '<div class="click-helper">Klik/pilih status di bawah untuk terus keluar senarai CR berkaitan. Ini lebih stabil daripada click pada card HTML.</div>',
+    unsafe_allow_html=True,
+)
+
+status_detail_options = ["Pilih status untuk lihat senarai"] + list(non_complete_status_counts.index)
+selected_status_detail = st.selectbox(
+    "Drill down: Status paling banyak belum selesai",
+    status_detail_options,
+    key="status_drilldown_select",
+)
+
+if selected_status_detail != "Pilih status untuk lihat senarai":
+    status_detail = filtered[filtered["Status"] == selected_status_detail].copy()
+    detail_cols = [
+        "Bil", "Bahagian", "Tarikh Permohonan", "CCB", "No. CCB",
+        "Tajuk CR", "Status", "Nota", "On-Site", "Off-Site", "Kos (RM)", "Aging Days"
+    ]
+    detail_cols = [col for col in detail_cols if col in status_detail.columns]
+
+    with st.expander(
+        f"Senarai CR untuk status {selected_status_detail} ({len(status_detail):,} rekod)",
+        expanded=True,
+    ):
+        st.dataframe(
+            status_detail[detail_cols].sort_values("Aging Days", ascending=False, na_position="last"),
+            use_container_width=True,
+            hide_index=True,
+            height=340,
+        )
+
 
 # =========================================================
 # ROW 1: COMPLETION + STATUS
@@ -685,6 +726,36 @@ with age_right:
         fig_aging.update_traces(marker_color="#fdba74", textposition="outside")
         fig_aging.update_layout(xaxis_title="Aging Bucket", yaxis_title="Bilangan CR")
         st.plotly_chart(clean_chart(fig_aging, 300, legend=False), use_container_width=True)
+
+        available_buckets = [
+            bucket for bucket in ONGOING_BUCKET_ORDER
+            if bucket in ongoing_df["Aging Bucket"].dropna().unique()
+        ]
+
+        selected_bucket = st.radio(
+            "Klik/pilih Aging Bucket untuk lihat senarai CR",
+            available_buckets,
+            horizontal=True,
+            key="aging_bucket_drilldown",
+        )
+
+        bucket_detail = ongoing_df[ongoing_df["Aging Bucket"] == selected_bucket].copy()
+        bucket_cols = [
+            "Bil", "Bahagian", "Tarikh Permohonan", "CCB", "No. CCB",
+            "Tajuk CR", "Status", "Nota", "Aging Days", "On-Site", "Off-Site", "Kos (RM)"
+        ]
+        bucket_cols = [col for col in bucket_cols if col in bucket_detail.columns]
+
+        with st.expander(
+            f"Senarai On-going CR untuk Aging Bucket {selected_bucket} ({len(bucket_detail):,} rekod)",
+            expanded=True,
+        ):
+            st.dataframe(
+                bucket_detail[bucket_cols].sort_values("Aging Days", ascending=False, na_position="last"),
+                use_container_width=True,
+                hide_index=True,
+                height=340,
+            )
 
 
 # =========================================================
