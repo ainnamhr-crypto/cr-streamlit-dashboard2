@@ -157,15 +157,39 @@ if date_range and isinstance(date_range, tuple) and len(date_range) == 2:
     start_date, end_date = pd.to_datetime(date_range[0]), pd.to_datetime(date_range[1])
     filtered = filtered[(filtered["Tarikh"].isna()) | ((filtered["Tarikh"] >= start_date) & (filtered["Tarikh"] <= end_date))]
 
-kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
 total_cr = len(filtered)
 selesai = int((filtered["Status"] == "SELESAI").sum())
 completion_rate = (selesai / total_cr * 100) if total_cr else 0
-kpi1.metric("Jumlah CR", f"{total_cr:,}")
-kpi2.metric("Selesai", f"{selesai:,}")
-kpi3.metric("Completion", f"{completion_rate:.1f}%")
-kpi4.metric("Jumlah Kos", rm(filtered["Kos Numeric"].sum()))
-kpi5.metric("Total Mandays", number(filtered["Total Mandays"].sum()))
+jumlah_kos = rm(filtered["Kos Numeric"].sum())
+total_mandays = number(filtered["Total Mandays"].sum())
+
+def kpi_card(label, value):
+    st.markdown(
+        f"""
+        <div class="kpi-card">
+            <div class="kpi-label">{label}</div>
+            <div class="kpi-value">{value}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+kpi1, kpi2, kpi3, kpi4, kpi5 = st.columns(5)
+
+with kpi1:
+    kpi_card("Jumlah CR", f"{total_cr:,}")
+
+with kpi2:
+    kpi_card("Selesai", f"{selesai:,}")
+
+with kpi3:
+    kpi_card("Completion", f"{completion_rate:.1f}%")
+
+with kpi4:
+    kpi_card("Jumlah Kos", jumlah_kos)
+
+with kpi5:
+    kpi_card("Total Mandays", total_mandays)
 
 st.divider()
 
