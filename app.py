@@ -12,6 +12,39 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+st.markdown("""
+<style>
+.main {
+    background-color: #f7f9fc;
+}
+
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.kpi-card {
+    background: white;
+    padding: 1.2rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 1px solid #eef1f5;
+}
+
+.kpi-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin-bottom: 0.3rem;
+}
+
+.kpi-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #111827;
+}
+</style>
+""", unsafe_allow_html=True)
+
 DEFAULT_DATA = Path(__file__).parent / "data.csv"
 
 MONTH_MAP = {
